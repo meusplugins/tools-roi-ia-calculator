@@ -1,9 +1,14 @@
 FROM node:18-alpine
 WORKDIR /usr/src/app
+
+# 1) Instala tudo (prod + dev)
 COPY package*.json ./
-RUN apk add --no-cache python3 make g++
-RUN npm install --legacy-peer-deps 2>&1 | tee /tmp/npm-log.txt || (cat /tmp/npm-log.txt && exit 1)
+RUN npm ci --legacy-peer-deps
+
+# 2) Copia o restante e faz o build
 COPY . .
 RUN npm run build
+
+# 3) Serve com preview
 EXPOSE 4173
 CMD ["npm", "run", "preview"]
