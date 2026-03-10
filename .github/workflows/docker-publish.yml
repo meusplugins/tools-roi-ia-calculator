@@ -23,5 +23,5 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/tools-roi-ia-calculator:latest
           # A chave Gemini é injetada no momento do build
-          build-args: |
-            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+          # build-args: |
+            # GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
