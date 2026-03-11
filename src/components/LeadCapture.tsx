@@ -1,8 +1,9 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CalculatorData, CalculatorResults } from "../types";
 import { Send } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { trackEvent } from "../lib/analytics";
 
 interface LeadCaptureProps {
   data: CalculatorData;
@@ -11,6 +12,10 @@ interface LeadCaptureProps {
 }
 
 export function LeadCapture({ data, results, onComplete }: LeadCaptureProps) {
+  useEffect(() => {
+    trackEvent("step_02");
+  }, []);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -48,7 +53,7 @@ export function LeadCapture({ data, results, onComplete }: LeadCaptureProps) {
 
     try {
       // Enviar para o Webhook (Opcional, mantido para redundância)
-      fetch("https://hook.us1.make.com/your-webhook-url", {
+      fetch("https://webhook.nuzz.com.br/webhook/tools-roi-calculator", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
