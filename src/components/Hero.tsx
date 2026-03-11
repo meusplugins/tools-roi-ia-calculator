@@ -1,11 +1,17 @@
 import { motion } from "motion/react";
 import { ArrowRight, Calculator, BarChart3, TrendingUp, Clock } from "lucide-react";
+import { useEffect } from "react";
+import { trackEvent } from "../lib/analytics";
 
 interface HeroProps {
   onStart: () => void;
 }
 
 export function Hero({ onStart }: HeroProps) {
+  useEffect(() => {
+    trackEvent("start");
+  }, []);
+
   return (
     <section className="relative min-h-[88vh] flex flex-col items-center justify-center text-center px-4 overflow-hidden">
       {/* Background Glows - Subtle and professional */}
@@ -57,7 +63,7 @@ export function Hero({ onStart }: HeroProps) {
 
         <button
           onClick={onStart}
-          className="primary-button flex items-center gap-2 text-lg px-8 py-4"
+          className="primary-button flex items-center gap-2 text-lg px-8 py-4 mb-[50px]"
         >
           <Calculator className="w-5 h-5" />
           Iniciar Diagnóstico Gratuito
