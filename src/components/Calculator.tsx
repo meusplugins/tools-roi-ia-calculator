@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CalculatorData } from "../types";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { trackEvent } from "../lib/analytics";
 
 interface CalculatorProps {
   onComplete: (data: CalculatorData) => void;
@@ -14,6 +15,10 @@ const STEPS = [
 ];
 
 export function Calculator({ onComplete }: CalculatorProps) {
+  useEffect(() => {
+    trackEvent("step_01");
+  }, []);
+
   const [step, setStep] = useState(1);
   const [rawInputs, setRawInputs] = useState<Record<string, string>>({});
   const [data, setData] = useState<CalculatorData>({
