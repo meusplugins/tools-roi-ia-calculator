@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { CalculatorData, CalculatorResults } from "../types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TrendingUp,
   Clock,
@@ -23,6 +23,7 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import { trackEvent } from "../lib/analytics";
 
 interface ResultsProps {
   data: CalculatorData;
@@ -34,6 +35,10 @@ interface ResultsProps {
 }
 
 export function Results({ data, results, userName, userEmail, userWhatsapp, onAction }: ResultsProps) {
+  useEffect(() => {
+    trackEvent("step_03");
+  }, []);
+
   const [copied, setCopied] = useState(false);
   const [timeframe, setTimeframe] = useState<6 | 12>(12);
 
@@ -369,6 +374,7 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
             href={`https://app.cal.com/nuzzlabs/reuniao-follow-up?name=${encodeURIComponent(userName || "")}&email=${encodeURIComponent(userEmail || "")}&whatsapp=${encodeURIComponent(userWhatsapp || "")}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackEvent("click_call_button")}
             className="primary-button inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 text-lg"
           >
             Quero Otimizar esse processo
