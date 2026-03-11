@@ -7,13 +7,13 @@ services:
     deploy:
       replicas: 1
       labels:
-  - "traefik.enable=true"
-  - "traefik.http.routers.roi-calculator.rule=Host(`calculadora.nuzz.com.br`)"
-  - "traefik.http.routers.roi-calculator.entrypoints=websecure"
-  - "traefik.http.routers.roi-calculator.tls.certresolver=letsencryptresolver"
-  - "traefik.http.routers.roi-calculator.priority=10"
-  - "traefik.http.services.roi-calculator.loadbalancer.passHostHeader=true"
-  - "traefik.http.services.roi-calculator.loadbalancer.server.port=4173"
+        - "traefik.enable=true"
+        - "traefik.http.routers.roi-calculator.rule=Host(`calculadora.nuzz.com.br`)"
+        - "traefik.http.routers.roi-calculator.entrypoints=websecure"
+        - "traefik.http.routers.roi-calculator.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.roi-calculator.priority=10"
+        - "traefik.http.services.roi-calculator.loadbalancer.passHostHeader=true"
+        - "traefik.http.services.roi-calculator.loadbalancer.server.port=4173"
 networks:
   NetNuzz:
     external: true
