@@ -5,9 +5,12 @@ import { CalculatorData, CalculatorResults } from "../types";
 import { supabase } from "../lib/supabase";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Logo } from "../components/Logo";
+import { LanguageSelector } from "../components/LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 export function SharedResult() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const [data, setData] = useState<CalculatorData | null>(null);
   const [results, setResults] = useState<CalculatorResults | null>(null);
   const [userName, setUserName] = useState<string>("");
@@ -100,20 +103,25 @@ export function SharedResult() {
     <div className="min-h-screen bg-[#07111F] text-[#F5FAFF] font-sans selection:bg-[#00E676]/30 selection:text-white">
       {/* Header */}
       <header className="w-full py-6 px-8 flex items-center justify-between border-b border-white/5 bg-[#07111F]/80 backdrop-blur-md sticky top-0 z-50">
-        <a 
-          href="https://nuzzlabs.com.br/?utm_campaign=roi-calculator&utm_medium=landing-page&utm_source=tools"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2"
-        >
-          <Logo className="h-8 w-auto text-white" />
-        </a>
-        <Link
-          to="/"
-          className="text-sm font-medium text-[#8FA6BA] hover:text-white transition-colors"
-        >
-          Fazer novo diagnóstico
-        </Link>
+        <div className="flex items-center gap-8">
+          <a 
+            href="https://nuzzlabs.com.br/?utm_campaign=roi-calculator&utm_medium=landing-page&utm_source=tools"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2"
+          >
+            <Logo className="h-8 w-auto text-white" />
+          </a>
+          <Link
+            to="/"
+            className="text-sm font-medium text-[#8FA6BA] hover:text-white transition-colors"
+          >
+            {t('shared.new_diagnostic')}
+          </Link>
+        </div>
+        <div className="flex items-center gap-4">
+          <LanguageSelector />
+        </div>
       </header>
 
       <main className="flex-1 flex flex-col items-center justify-center relative py-12">
