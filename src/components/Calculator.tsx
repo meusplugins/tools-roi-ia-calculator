@@ -3,18 +3,21 @@ import { motion, AnimatePresence } from "motion/react";
 import { CalculatorData } from "../types";
 import { ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { trackEvent } from "../lib/analytics";
+import { useTranslation } from "react-i18next";
 
 interface CalculatorProps {
   onComplete: (data: CalculatorData) => void;
 }
 
-const STEPS = [
-  { id: 1, title: "Contexto da Tarefa" },
-  { id: 2, title: "Custo Atual" },
-  { id: 3, title: "Viabilidade & Investimento" },
-];
-
 export function Calculator({ onComplete }: CalculatorProps) {
+  const { t } = useTranslation();
+  
+  const STEPS = [
+    { id: 1, title: t('calculator.step1_title') },
+    { id: 2, title: t('calculator.step2_title') },
+    { id: 3, title: t('calculator.step3_title') },
+  ];
+
   useEffect(() => {
     trackEvent("step_01");
   }, []);
@@ -102,38 +105,38 @@ export function Calculator({ onComplete }: CalculatorProps) {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <h2 className="text-2xl font-bold text-white mb-2">Qual tarefa está consumindo o tempo do seu time?</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('calculator.step1_question')}</h2>
               <p className="text-[#8FA6BA] mb-8">
-                Escolha algo que acontece com frequência e envolve execução manual — mesmo que pareça simples. Esses são os maiores geradores de custo oculto.
+                {t('calculator.step1_desc')}
               </p>
 
               <div>
                 <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                  Nome da tarefa ou processo
+                  {t('calculator.task_label')}
                 </label>
                 <input
                   type="text"
                   className="input-field"
-                  placeholder="Ex: Conferência manual de notas fiscais"
+                  placeholder={t('calculator.task_placeholder')}
                   value={data.taskName}
                   onChange={(e) => updateData({ taskName: e.target.value })}
                 />
-                <p className="text-xs text-[#8FA6BA] mt-2">Seja específico — isso vai aparecer no seu diagnóstico personalizado.</p>
+                <p className="text-xs text-[#8FA6BA] mt-2">{t('calculator.task_hint')}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                  Quantas pessoas executam essa tarefa hoje?
+                  {t('calculator.people_label')}
                 </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   className="input-field"
-                  placeholder="Ex: 2"
+                  placeholder={t('calculator.people_placeholder')}
                   value={rawInputs.numberOfPeople ?? (data.numberOfPeople || "")}
                   onChange={(e) => handleNumberChange("numberOfPeople", e.target.value)}
                 />
-                <p className="text-xs text-[#8FA6BA] mt-2">Inclua todos que participam do processo, mesmo parcialmente.</p>
+                <p className="text-xs text-[#8FA6BA] mt-2">{t('calculator.people_hint')}</p>
               </div>
             </motion.div>
           )}
@@ -147,9 +150,9 @@ export function Calculator({ onComplete }: CalculatorProps) {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <h2 className="text-2xl font-bold text-white mb-2">O que essa tarefa custa por mês, de verdade?</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('calculator.step2_question')}</h2>
               <p className="text-[#8FA6BA] mb-8">
-                A maioria das empresas subestima esse número. Vamos calcular com precisão o que está sendo gasto hoje — antes de qualquer otimização.
+                {t('calculator.step2_desc')}
               </p>
 
               <div className="flex gap-4 mb-6">
@@ -161,7 +164,7 @@ export function Calculator({ onComplete }: CalculatorProps) {
                   }`}
                   onClick={() => updateData({ inputMode: "salary" })}
                 >
-                  Salário Mensal
+                  {t('calculator.salary_mode')}
                 </button>
                 <button
                   className={`flex-1 py-3 px-4 rounded-xl border font-semibold transition-all ${
@@ -171,35 +174,35 @@ export function Calculator({ onComplete }: CalculatorProps) {
                   }`}
                   onClick={() => updateData({ inputMode: "hourly" })}
                 >
-                  Valor por Hora
+                  {t('calculator.hourly_mode')}
                 </button>
               </div>
 
               {data.inputMode === "salary" ? (
                 <div>
                   <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                    Salário mensal médio por pessoa (R$)
+                    {t('calculator.salary_label')}
                   </label>
                   <input
                     type="text"
                     inputMode="decimal"
                     className="input-field"
-                    placeholder="Ex: 3500"
+                    placeholder={t('calculator.salary_placeholder')}
                     value={rawInputs.monthlySalary ?? (data.monthlySalary || "")}
                     onChange={(e) => handleNumberChange("monthlySalary", e.target.value)}
                   />
-                  <p className="text-xs text-[#8FA6BA] mt-2">Use o custo total (CLT = salário + ~70% de encargos).</p>
+                  <p className="text-xs text-[#8FA6BA] mt-2">{t('calculator.salary_hint')}</p>
                 </div>
               ) : (
                 <div>
                   <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                    Valor por hora (R$)
+                    {t('calculator.hourly_label')}
                   </label>
                   <input
                     type="text"
                     inputMode="decimal"
                     className="input-field"
-                    placeholder="Ex: 25"
+                    placeholder={t('calculator.hourly_placeholder')}
                     value={rawInputs.hourlyRate ?? (data.hourlyRate || "")}
                     onChange={(e) => handleNumberChange("hourlyRate", e.target.value)}
                   />
@@ -209,7 +212,7 @@ export function Calculator({ onComplete }: CalculatorProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                    Tempo médio por execução
+                    {t('calculator.time_label')}
                   </label>
                   <input
                     type="text"
@@ -222,32 +225,32 @@ export function Calculator({ onComplete }: CalculatorProps) {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                    Unidade de tempo
+                    {t('calculator.time_unit_label')}
                   </label>
                   <select
                     className="input-field appearance-none"
                     value={data.timeUnit}
                     onChange={(e) => updateData({ timeUnit: e.target.value as "minutes" | "hours" })}
                   >
-                    <option value="minutes">Minutos</option>
-                    <option value="hours">Horas</option>
+                    <option value="minutes">{t('calculator.unit_minutes')}</option>
+                    <option value="hours">{t('calculator.unit_hours')}</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                  Vezes por semana que a tarefa ocorre
+                  {t('calculator.frequency_label')}
                 </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   className="input-field"
-                  placeholder="Ex: 15"
+                  placeholder={t('calculator.frequency_placeholder')}
                   value={rawInputs.executionsPerWeek ?? (data.executionsPerWeek || "")}
                   onChange={(e) => handleNumberChange("executionsPerWeek", e.target.value)}
                 />
-                <p className="text-xs text-[#8FA6BA] mt-2">Se for diária, multiplique pelos dias úteis da semana. (Ex: 2x ao dia em 5 dias da semana = 10)</p>
+                <p className="text-xs text-[#8FA6BA] mt-2">{t('calculator.frequency_hint')}</p>
               </div>
             </motion.div>
           )}
@@ -261,38 +264,38 @@ export function Calculator({ onComplete }: CalculatorProps) {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <h2 className="text-2xl font-bold text-white mb-2">Qual o tamanho do investimento que estamos avaliando?</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('calculator.step3_question')}</h2>
               <p className="text-[#8FA6BA] mb-8">
-                Com esses dados, calculamos o payback exato e o lucro líquido projetado para os próximos 12 meses.
+                {t('calculator.step3_desc')}
               </p>
 
               <div>
                 <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                  Percentual estimado de automação (%)
+                  {t('calculator.automation_label')}
                 </label>
                 <select
                   className="input-field appearance-none"
                   value={data.automationPercentage}
                   onChange={(e) => updateData({ automationPercentage: parseFloat(e.target.value) || 0 })}
                 >
-                  <option value="50">50% (Conservador)</option>
-                  <option value="70">70% (Provável)</option>
-                  <option value="80">80% (Recomendado)</option>
-                  <option value="90">90% (Agressivo)</option>
-                  <option value="100">100% (Total)</option>
+                  <option value="50">{t('calculator.automation_options.conservative')}</option>
+                  <option value="70">{t('calculator.automation_options.probable')}</option>
+                  <option value="80">{t('calculator.automation_options.recommended')}</option>
+                  <option value="90">{t('calculator.automation_options.aggressive')}</option>
+                  <option value="100">{t('calculator.automation_options.total')}</option>
                 </select>
-                <p className="text-xs text-[#8FA6BA] mt-2">Percentual do processo que será eliminado da operação manual.</p>
+                <p className="text-xs text-[#8FA6BA] mt-2">{t('calculator.automation_hint')}</p>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                  Valor estimado do projeto de automação (R$) <span className="text-[#6E8498] font-normal">(Opcional)</span>
+                  {t('calculator.project_value_label')} <span className="text-[#6E8498] font-normal">{t('calculator.project_value_optional')}</span>
                 </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   className="input-field"
-                  placeholder="Ex: 12000"
+                  placeholder={t('calculator.project_value_placeholder')}
                   value={rawInputs.projectValue ?? (data.projectValue || "")}
                   onChange={(e) => handleNumberChange("projectValue", e.target.value)}
                 />
@@ -300,13 +303,13 @@ export function Calculator({ onComplete }: CalculatorProps) {
 
               <div>
                 <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                  Custo mensal de ferramentas/API (R$) <span className="text-[#6E8498] font-normal">(Opcional)</span>
+                  {t('calculator.tool_cost_label')} <span className="text-[#6E8498] font-normal">{t('calculator.tool_cost_optional')}</span>
                 </label>
                 <input
                   type="text"
                   inputMode="decimal"
                   className="input-field"
-                  placeholder="Ex: 500"
+                  placeholder={t('calculator.tool_cost_placeholder')}
                   value={rawInputs.monthlyToolCost ?? (data.monthlyToolCost || "")}
                   onChange={(e) => handleNumberChange("monthlyToolCost", e.target.value)}
                 />
@@ -324,7 +327,7 @@ export function Calculator({ onComplete }: CalculatorProps) {
             }`}
           >
             <ArrowLeft className="w-5 h-5" />
-            Voltar
+            {t('calculator.back')}
           </button>
 
           <button
@@ -333,7 +336,7 @@ export function Calculator({ onComplete }: CalculatorProps) {
             className="primary-button flex items-center justify-center gap-2 px-6 py-3 w-full sm:w-auto"
           >
             <span className="text-center">
-              {step === STEPS.length ? "Ver Meu Diagnóstico Completo" : "Avançar"}
+              {step === STEPS.length ? t('calculator.finish') : t('calculator.next')}
             </span>
             {step === STEPS.length ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <ArrowRight className="w-5 h-5 flex-shrink-0" />}
           </button>

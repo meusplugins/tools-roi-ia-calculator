@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { CalculatorData, CalculatorResults } from "../types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   TrendingUp,
   Clock,
@@ -24,6 +24,7 @@ import {
   ResponsiveContainer
 } from "recharts";
 import { trackEvent } from "../lib/analytics";
+import { useTranslation, Trans } from "react-i18next";
 
 interface ResultsProps {
   data: CalculatorData;
@@ -35,6 +36,8 @@ interface ResultsProps {
 }
 
 export function Results({ data, results, userName, userEmail, userWhatsapp, onAction }: ResultsProps) {
+  const { t, i18n } = useTranslation();
+  
   useEffect(() => {
     trackEvent("step_03");
   }, []);
@@ -50,32 +53,46 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+  const localeInfo = useMemo(() => {
+    const lang = i18n.language;
+    if (lang.startsWith('pt-BR')) return { locale: 'pt-BR', currency: 'BRL' };
+    if (lang.startsWith('pt-PT')) return { locale: 'pt-PT', currency: 'EUR' };
+    if (lang.startsWith('es')) return { locale: 'es-ES', currency: 'EUR' };
+    if (lang.startsWith('it')) return { locale: 'it-IT', currency: 'EUR' };
+    return { locale: 'en-US', currency: 'USD' };
+  }, [i18n.language]);
 
-  const formatNumber = (value: number) =>
-    new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(value);
+  const currencyFormatter = useMemo(() => 
+    new Intl.NumberFormat(localeInfo.locale, { style: "currency", currency: localeInfo.currency }),
+  [localeInfo]);
+
+  const numberFormatter = useMemo(() => 
+    new Intl.NumberFormat(localeInfo.locale, { maximumFractionDigits: 1 }),
+  [localeInfo]);
+
+  const formatCurrency = (value: number) => currencyFormatter.format(value);
+  const formatNumber = (value: number) => numberFormatter.format(value);
 
   const getDiagnosticText = () => {
     if (results.paybackMonths <= 0) {
-      return "Com os dados informados, o projeto não apresenta retorno financeiro direto. Talvez o ganho esteja em escala, qualidade ou redução de erros.";
+      return t('results.diagnostic_texts.no_return');
     }
     if (results.paybackMonths <= 3) {
-      return "Esse é um caso com retorno muito rápido. A automação tende a se pagar em pouco tempo e começar a gerar caixa ainda no curto prazo.";
+      return t('results.diagnostic_texts.fast_return');
     }
     if (results.paybackMonths <= 6) {
-      return "Esse processo apresenta um bom potencial de retorno. O investimento tende a se pagar em prazo saudável e gerar economia consistente.";
+      return t('results.diagnostic_texts.good_return');
     }
     if (results.paybackMonths <= 12) {
-      return "O retorno existe, mas pode depender de escopo, ganho de qualidade e redução de retrabalho para ficar ainda mais forte.";
+      return t('results.diagnostic_texts.exists_return');
     }
-    return "Com os dados informados, talvez essa automação faça mais sentido por escala, padronização ou redução de erros do que por economia direta.";
+    return t('results.diagnostic_texts.scale_return');
   };
 
   const getPriorityLabel = () => {
-    if (results.priorityScore >= 80) return { text: "Alta Prioridade", color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" };
-    if (results.priorityScore >= 50) return { text: "Boa Oportunidade", color: "text-[#4DC3FF]", bg: "bg-[#4DC3FF]/10", border: "border-[#4DC3FF]/20" };
-    return { text: "Oportunidade Moderada", color: "text-[#F59E0B]", bg: "bg-[#F59E0B]/10", border: "border-[#F59E0B]/20" };
+    if (results.priorityScore >= 80) return { text: t('results.priority_labels.high'), color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20" };
+    if (results.priorityScore >= 50) return { text: t('results.priority_labels.good'), color: "text-[#4DC3FF]", bg: "bg-[#4DC3FF]/10", border: "border-[#4DC3FF]/20" };
+    return { text: t('results.priority_labels.moderate'), color: "text-[#F59E0B]", bg: "bg-[#F59E0B]/10", border: "border-[#F59E0B]/20" };
   };
 
   const priority = getPriorityLabel();
@@ -90,7 +107,6 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
   const monthlyIaCost = (effectiveProjectValue / timeframe) + apiCost;
   const monthlyNetSavingsDiluted = grossSavings - monthlyIaCost;
   const accumulatedProfit = monthlyNetSavingsDiluted * timeframe;
-  const currentRoi = effectiveProjectValue > 0 ? (accumulatedProfit / effectiveProjectValue) * 100 : 0;
   
   const costOfInaction12m = manualMonthlyCost * 12;
   const hoursSavedPerMonth = Number(results.hoursSavedPerMonth) || 0;
@@ -102,7 +118,7 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
     const month = i + 1;
     const profit = monthlyNetSavingsDiluted * month;
     return {
-      name: `Mês ${month}`,
+      name: `${month}`,
       lucro: profit,
     };
   });
@@ -118,18 +134,23 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
         <button
           onClick={handleCopyLink}
           className="absolute top-0 right-0 md:-right-4 flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors text-sm font-medium text-[#C6D7E6]"
-          title="Copiar link deste resultado"
+          title={t('results.copy_link')}
         >
           {copied ? <Check className="w-4 h-4 text-[#00E676]" /> : <LinkIcon className="w-4 h-4" />}
-          {copied ? "Link copiado!" : "Copiar Link"}
+          {copied ? t('results.link_copied') : t('results.copy_link')}
         </button>
 
         <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight pt-12 md:pt-0">
-          Você está deixando <span className="text-[#F59E0B]">{formatCurrency(costOfInaction12m)}</span> na mesa em 12 meses{firstName ? `, ${firstName}` : ""}.
+          <Trans i18nKey="results.headline" values={{ amount: formatCurrency(costOfInaction12m) }}>
+            Você está deixando <span className="text-[#F59E0B]">{'{{amount}}'}</span> na mesa em 12 meses
+          </Trans>
+          {firstName ? `, ${firstName}` : ""}.
         </h2>
         <p className="text-lg text-[#8FA6BA] max-w-2xl mx-auto">
-          O processo <span className="text-white font-semibold">"{data.taskName}"</span> consome{" "}
-          <span className="text-[#4DC3FF] font-semibold">{formatCurrency(manualMonthlyCost)}/mês</span> da sua operação em execução manual.
+          <Trans i18nKey="results.subheadline" values={{ taskName: data.taskName, amount: formatCurrency(manualMonthlyCost) }}>
+            O processo <span className="text-white font-semibold">"{'{{taskName}}'}"</span> consome{" "}
+            <span className="text-[#4DC3FF] font-semibold">{'{{amount}}'}/mês</span> da sua operação em execução manual.
+          </Trans>
         </p>
       </motion.div>
 
@@ -144,13 +165,13 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
             onClick={() => setTimeframe(6)}
             className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${timeframe === 6 ? 'bg-[#4DC3FF] text-[#07111F]' : 'text-[#8FA6BA] hover:text-white'}`}
           >
-            Visão 6 Meses
+            {t('results.view_6m')}
           </button>
           <button
             onClick={() => setTimeframe(12)}
             className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${timeframe === 12 ? 'bg-[#4DC3FF] text-[#07111F]' : 'text-[#8FA6BA] hover:text-white'}`}
           >
-            Visão 12 Meses
+            {t('results.view_12m')}
           </button>
         </div>
       </motion.div>
@@ -166,13 +187,15 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
           <div>
             <div className="flex items-center gap-3 mb-4 text-[#8FA6BA]">
               <DollarSign className="w-5 h-5" />
-              <h3 className="font-semibold text-sm uppercase tracking-wider">Custo Atual / Mês</h3>
+              <h3 className="font-semibold text-sm uppercase tracking-wider">{t('results.current_cost')}</h3>
             </div>
             <p className="text-3xl font-bold text-white">{formatCurrency(manualMonthlyCost)}</p>
           </div>
           <div className="mt-4 pt-3 border-t border-white/10">
             <p className="text-xs text-[#8FA6BA]">
-              Cálculo: <span className="text-white">{formatNumber(results.monthlyHours)}h/mês</span> × <span className="text-white">{formatCurrency(results.hourlyRateCalculated)}/h</span>
+              <Trans i18nKey="results.cost_calc" values={{ hours: formatNumber(results.monthlyHours), rate: formatCurrency(results.hourlyRateCalculated) }}>
+                Cálculo: <span className="text-white">{'{{hours}}'}h/mês</span> × <span className="text-white">{'{{rate}}'}/h</span>
+              </Trans>
             </p>
           </div>
         </motion.div>
@@ -186,17 +209,19 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
           <div>
             <div className="flex items-center gap-3 mb-4 text-[#F59E0B]">
               <Zap className="w-5 h-5" />
-              <h3 className="font-semibold text-sm uppercase tracking-wider">Custo IA / Mês</h3>
+              <h3 className="font-semibold text-sm uppercase tracking-wider">{t('results.ia_cost')}</h3>
             </div>
             <p className="text-3xl font-bold text-[#F59E0B]">{formatCurrency(monthlyIaCost)}</p>
           </div>
           <div className="mt-4 pt-3 border-t border-white/10">
             <p className="text-xs text-[#8FA6BA]">
-              Cálculo: (<span className="text-white">{formatCurrency(effectiveProjectValue)}</span> ÷ {timeframe}m) + <span className="text-white">{formatCurrency(apiCost)}</span> API
+              <Trans i18nKey="results.ia_calc" values={{ value: formatCurrency(effectiveProjectValue), months: timeframe, api: formatCurrency(apiCost) }}>
+                Cálculo: (<span className="text-white">{'{{value}}'}</span> ÷ {'{{months}}'}m) + <span className="text-white">{'{{api}}'}</span> API
+              </Trans>
             </p>
             {results.isDefaultProjectValue && (
               <p className="text-[10px] text-[#F59E0B] mt-2 bg-[#F59E0B]/10 p-2 rounded-md border border-[#F59E0B]/20">
-                * Baseado em projeto de R$ 4k
+                {t('results.ia_default_hint')}
               </p>
             )}
           </div>
@@ -211,13 +236,15 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
           <div>
             <div className="flex items-center gap-3 mb-4 text-[#4DC3FF]">
               <TrendingUp className="w-5 h-5" />
-              <h3 className="font-semibold text-sm uppercase tracking-wider">Economia / Mês</h3>
+              <h3 className="font-semibold text-sm uppercase tracking-wider">{t('results.savings')}</h3>
             </div>
             <p className="text-4xl font-extrabold text-[#4DC3FF]">{formatCurrency(monthlyNetSavingsDiluted)}</p>
           </div>
           <div className="mt-4 pt-3 border-t border-[#4DC3FF]/20">
             <p className="text-xs text-[#8FA6BA]">
-              Cálculo: (<span className="text-white">{formatCurrency(manualMonthlyCost)}</span> × {automationPercentage}%) - <span className="text-white">{formatCurrency(monthlyIaCost)}</span> IA
+              <Trans i18nKey="results.savings_calc" values={{ cost: formatCurrency(manualMonthlyCost), percentage: automationPercentage, ia: formatCurrency(monthlyIaCost) }}>
+                Cálculo: (<span className="text-white">{'{{cost}}'}</span> × {'{{percentage}}'}%) - <span className="text-white">{'{{ia}}'}</span> IA
+              </Trans>
             </p>
           </div>
         </motion.div>
@@ -231,13 +258,15 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
           <div>
             <div className="flex items-center gap-3 mb-4 text-[#8FA6BA]">
               <CheckCircle className="w-5 h-5" />
-              <h3 className="font-semibold text-sm uppercase tracking-wider">Lucro em {timeframe} Meses</h3>
+              <h3 className="font-semibold text-sm uppercase tracking-wider">{t('results.profit', { months: timeframe })}</h3>
             </div>
             <p className="text-3xl font-bold text-white">{formatCurrency(accumulatedProfit)}</p>
           </div>
           <div className="mt-4 pt-3 border-t border-white/10">
             <p className="text-xs text-[#8FA6BA]">
-              Cálculo: <span className="text-white">{formatCurrency(monthlyNetSavingsDiluted)}</span> × {timeframe} meses
+              <Trans i18nKey="results.profit_calc" values={{ savings: formatCurrency(monthlyNetSavingsDiluted), months: timeframe }}>
+                Cálculo: <span className="text-white">{'{{savings}}'}</span> × {'{{months}}'} meses
+              </Trans>
             </p>
           </div>
         </motion.div>
@@ -253,14 +282,14 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
         <div className="flex-1 space-y-4">
           <div className="flex items-center gap-3 mb-2">
             <FileText className="w-6 h-6 text-[#9B8CFF]" />
-            <h3 className="text-xl font-bold text-white">Diagnóstico Executivo</h3>
+            <h3 className="text-xl font-bold text-white">{t('results.diagnostic_title')}</h3>
           </div>
           <p className="text-[#C6D7E6] leading-relaxed text-lg">
             {getDiagnosticText()}
           </p>
         </div>
         <div className={`shrink-0 flex flex-col items-center justify-center p-6 rounded-2xl border ${priority.bg} ${priority.border}`}>
-          <span className="text-sm font-semibold text-[#8FA6BA] mb-2 uppercase tracking-wider">Score de Oportunidade</span>
+          <span className="text-sm font-semibold text-[#8FA6BA] mb-2 uppercase tracking-wider">{t('results.opportunity_score')}</span>
           <span className={`text-5xl font-extrabold ${priority.color}`}>{results.priorityScore}</span>
           <span className={`mt-2 font-medium ${priority.color}`}>{priority.text}</span>
         </div>
@@ -277,17 +306,19 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
           <div className="flex items-center gap-3 mb-4 text-[#F59E0B]">
             <AlertTriangle className="w-6 h-6" />
             <h3 className="text-xl font-bold text-white">
-              {firstName ? `${firstName}, olhe o Custo de não automatizar` : "Custo de não automatizar"}
+              {firstName ? `${firstName}, ${t('results.inaction_title')}` : t('results.inaction_title')}
             </h3>
           </div>
           <p className="text-4xl font-extrabold text-[#F59E0B] mb-4">
             {formatCurrency(costOfInaction12m)}
           </p>
           <p className="text-[#C6D7E6] mb-4">
-            É o que essa tarefa vai custar nos próximos 12 meses se nada mudar.
+            {t('results.inaction_desc')}
           </p>
           <p className="text-[#8FA6BA] text-sm">
-            Cada mês de espera = <span className="text-white font-semibold">{formatCurrency(manualMonthlyCost)}</span> em custo não otimizado.
+            <Trans i18nKey="results.inaction_hint" values={{ amount: formatCurrency(manualMonthlyCost) }}>
+              Cada mês de espera = <span className="text-white font-semibold">{'{{amount}}'}</span> em custo não otimizado.
+            </Trans>
           </p>
         </motion.div>
 
@@ -299,25 +330,25 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
         >
           <div className="flex items-center gap-3 mb-4 text-[#9B8CFF]">
             <Activity className="w-6 h-6" />
-            <h3 className="text-xl font-bold text-white">Impacto Operacional Projetado</h3>
+            <h3 className="text-xl font-bold text-white">{t('results.impact_title')}</h3>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
-              <span className="text-[#8FA6BA]">Horas liberadas / mês</span>
+              <span className="text-[#8FA6BA]">{t('results.freed_hours_month')}</span>
               <span className="text-white font-bold">{formatNumber(hoursSavedPerMonth)}h</span>
             </div>
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
-              <span className="text-[#8FA6BA]">Horas liberadas em {timeframe} meses</span>
+              <span className="text-[#8FA6BA]">{t('results.freed_hours_period', { months: timeframe })}</span>
               <span className="text-white font-bold">{formatNumber(hoursSavedPeriod)}h</span>
             </div>
             <div className="flex justify-between items-center border-b border-white/5 pb-2">
-              <span className="text-[#8FA6BA]">Equivalente em meses de trabalho</span>
-              <span className="text-[#9B8CFF] font-bold">{formatNumber(equivalentMonthsFreed)} meses</span>
+              <span className="text-[#8FA6BA]">{t('results.equivalent_months')}</span>
+              <span className="text-[#9B8CFF] font-bold">{formatNumber(equivalentMonthsFreed)} {t('calculator.unit_hours').toLowerCase()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#8FA6BA]">Retorno sobre investimento (ROI)</span>
-              <span className={`font-bold ${currentRoi >= 0 ? 'text-[#22C55E]' : 'text-red-400'}`}>
-                {!isNaN(currentRoi) ? `${formatNumber(currentRoi)}%` : "0%"}
+              <span className="text-[#8FA6BA]">{t('results.roi_label')}</span>
+              <span className={`font-bold ${results.priorityScore >= 50 ? 'text-[#22C55E]' : 'text-red-400'}`}>
+                {results.priorityScore}%
               </span>
             </div>
           </div>
@@ -331,7 +362,7 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
         transition={{ delay: 0.8 }}
         className="glass-card p-8"
       >
-        <h3 className="text-xl font-bold text-white mb-6">Projeção de Retorno ({timeframe} Meses)</h3>
+        <h3 className="text-xl font-bold text-white mb-6">{t('results.chart_title', { months: timeframe })}</h3>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -342,7 +373,7 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
                 </linearGradient>
               </defs>
               <XAxis dataKey="name" stroke="#6E8498" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#6E8498" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `R$ ${value / 1000}k`} />
+              <YAxis stroke="#6E8498" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${localeInfo.currency === 'BRL' ? 'R$' : localeInfo.currency === 'USD' ? '$' : '€'} ${value / 1000}k`} />
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#0B1728', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }}
@@ -365,10 +396,10 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
         <div className="absolute inset-0 bg-gradient-to-r from-[#4DC3FF]/5 to-[#9B8CFF]/5" />
         <div className="relative z-10">
           <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            Pronto para transformar esse número em resultado real{firstName ? `, ${firstName}` : ""}?
+            {t('results.cta_title', { name: firstName })}
           </h3>
           <p className="text-[#C6D7E6] mb-8 max-w-2xl mx-auto">
-            Com base no seu diagnóstico, podemos desenhar uma automação sob medida — reduzindo custo operacional, acelerando execução e liberando seu time para o que realmente importa.
+            {t('results.cta_desc')}
           </p>
           <a
             href={`https://app.cal.com/nuzzlabs/reuniao-follow-up?name=${encodeURIComponent(userName || "")}&email=${encodeURIComponent(userEmail || "")}&whatsapp=${encodeURIComponent(userWhatsapp || "")}`}
@@ -377,11 +408,11 @@ export function Results({ data, results, userName, userEmail, userWhatsapp, onAc
             onClick={() => trackEvent("click_call_button")}
             className="primary-button inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 text-lg"
           >
-            Quero Otimizar esse processo
+            {t('results.cta_button')}
             <ArrowRight className="w-5 h-5 ml-2" />
           </a>
           <p className="text-[#6E8498] text-xs mt-6">
-            * Estimativas baseadas nas informações fornecidas. Resultados reais podem variar conforme complexidade do processo.
+            {t('results.disclaimer')}
           </p>
         </div>
       </motion.div>

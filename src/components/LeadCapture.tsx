@@ -4,6 +4,7 @@ import { CalculatorData, CalculatorResults } from "../types";
 import { Send } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { trackEvent } from "../lib/analytics";
+import { useTranslation } from "react-i18next";
 
 interface LeadCaptureProps {
   data: CalculatorData;
@@ -12,6 +13,7 @@ interface LeadCaptureProps {
 }
 
 export function LeadCapture({ data, results, onComplete }: LeadCaptureProps) {
+  const { t } = useTranslation();
   useEffect(() => {
     trackEvent("step_02");
   }, []);
@@ -114,54 +116,54 @@ export function LeadCapture({ data, results, onComplete }: LeadCaptureProps) {
           className="glass-card p-8 md:p-12"
         >
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">Seu diagnóstico está quase na sua mão.</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">{t('lead.title')}</h2>
             <p className="text-[#8FA6BA]">
-              Milhares de reais em custo oculto foram calculados. Falta só um passo para você ver o número completo — e o que fazer com ele.
+              {t('lead.desc')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">Nome Completo</label>
+              <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">{t('lead.name_label')}</label>
               <input
                 type="text"
                 required
                 className="input-field"
-                placeholder="Seu nome"
+                placeholder={t('lead.name_placeholder')}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">E-mail Corporativo</label>
+              <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">{t('lead.email_label')}</label>
               <input
                 type="email"
                 required
                 className="input-field"
-                placeholder="seu@email.com"
+                placeholder={t('lead.email_placeholder')}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">WhatsApp</label>
+              <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">{t('lead.whatsapp_label')}</label>
               <input
                 type="tel"
                 required
                 className="input-field"
-                placeholder="(00) 00000-0000"
+                placeholder={t('lead.whatsapp_placeholder')}
                 value={formData.whatsapp}
                 onChange={handleWhatsappChange}
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-[#C6D7E6] mb-2">
-                Site da Empresa <span className="text-[#6E8498] font-normal">(Opcional)</span>
+                {t('lead.website_label')} <span className="text-[#6E8498] font-normal">{t('lead.website_optional')}</span>
               </label>
               <input
                 type="url"
                 className="input-field"
-                placeholder="https://suaempresa.com.br"
+                placeholder={t('lead.website_placeholder')}
                 value={formData.website}
                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
               />
@@ -183,7 +185,7 @@ export function LeadCapture({ data, results, onComplete }: LeadCaptureProps) {
               ) : (
                 <>
                   <Send className="w-5 h-5" />
-                  Gerar Diagnóstico
+                  {t('lead.cta')}
                 </>
               )}
             </button>

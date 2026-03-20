@@ -7,8 +7,10 @@ import { calculateROI } from "../lib/calculator";
 import { motion, AnimatePresence } from "motion/react";
 import { Logo } from "../components/Logo";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export function Home() {
+  const { t } = useTranslation();
   const [step, setStep] = useState<AppStep>("hero");
   const [data, setData] = useState<CalculatorData | null>(null);
   const [results, setResults] = useState<CalculatorResults | null>(null);
@@ -55,7 +57,7 @@ export function Home() {
             }}
             className="text-sm font-medium text-[#8FA6BA] hover:text-white transition-colors"
           >
-            Reiniciar
+            {t('header.restart')}
           </button>
         )}
       </header>
