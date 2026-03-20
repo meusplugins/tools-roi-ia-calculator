@@ -1,22 +1,7 @@
-- name: Setup Node
-  uses: actions/setup-node@v4
-  with:
-    node-version: 20
-
-- name: Test build (ver erro completo)
-  run: |
-    npm install --legacy-peer-deps
-    npm run build
-  env:
-    VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-    VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-
 name: Build & Push
-
 on:
   push:
     branches: [main]
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -29,14 +14,25 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Test build (ver erro completo)
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/tools-roi-ia-calculator:latest
-          # A chave Gemini é injetada no momento do build
           build-args: |
-              VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
-              VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          # GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+            VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
