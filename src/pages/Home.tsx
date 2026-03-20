@@ -6,6 +6,7 @@ import { CalculatorData, CalculatorResults, AppStep } from "../types";
 import { calculateROI } from "../lib/calculator";
 import { motion, AnimatePresence } from "motion/react";
 import { Logo } from "../components/Logo";
+import { LanguageSelector } from "../components/LanguageSelector";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -40,26 +41,31 @@ export function Home() {
     <div className="min-h-screen bg-[#07111F] text-[#F5FAFF] font-sans selection:bg-[#00E676]/30 selection:text-white">
       {/* Header */}
       <header className="w-full py-6 px-8 flex items-center justify-between border-b border-white/5 bg-[#07111F]/80 backdrop-blur-md sticky top-0 z-50">
-        <a 
-          href="https://nuzzlabs.com.br/?utm_campaign=roi-calculator&utm_medium=landing-page&utm_source=tools"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2"
-        >
-          <Logo className="h-8 w-auto text-white" />
-        </a>
-        {step !== "hero" && (
-          <button
-            onClick={() => {
-              setStep("hero");
-              setData(null);
-              setResults(null);
-            }}
-            className="text-sm font-medium text-[#8FA6BA] hover:text-white transition-colors"
+        <div className="flex items-center gap-8">
+          <a 
+            href="https://nuzzlabs.com.br/?utm_campaign=roi-calculator&utm_medium=landing-page&utm_source=tools"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2"
           >
-            {t('header.restart')}
-          </button>
-        )}
+            <Logo className="h-8 w-auto text-white" />
+          </a>
+          {step !== "hero" && (
+            <button
+              onClick={() => {
+                setStep("hero");
+                setData(null);
+                setResults(null);
+              }}
+              className="text-sm font-medium text-[#8FA6BA] hover:text-white transition-colors"
+            >
+              {t('header.restart')}
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <LanguageSelector />
+        </div>
       </header>
 
       {/* Main Content */}
